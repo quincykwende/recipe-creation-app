@@ -20,12 +20,15 @@ test("renders recipeName input and updates state", ()=> {
 test("adding and managing steps state", () => {
   render(<App />)
   const addStepButton = screen.getByText(/Add Step/i)
+  expect(addStepButton).toBeInTheDocument()
+
   // initial value of step array should be 0
   expect(screen.queryAllByText(/Step ID:/i).length).toBe(0)
 
   // add step
   fireEvent.click(addStepButton)
   expect(screen.getByText(/Step ID:/i)).toBeInTheDocument()
+  expect(screen.queryAllByText(/Step ID:/i).length).toBe(1)
 
   //add another step and make length is 2
   fireEvent.click(addStepButton)
