@@ -25,7 +25,7 @@ const StepEditor = ({ step, onUpdate }: StepEditorProps) => {
   return (
     <Box sx={{ width: "100%" }}>
       <Select
-        value={step.type}
+        value={step.type || ""}
         onChange={(e) =>
           onUpdate({ ...step, type: e.target.value as StepType, options: {} })
         }
@@ -52,7 +52,7 @@ const StepEditor = ({ step, onUpdate }: StepEditorProps) => {
             <MenuItem value="ImageSection">Section of image</MenuItem>
           </Select>
           {step.options.imageType === "ImageSection" && (
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
                 label="Center X"
                 type="number"
@@ -101,7 +101,7 @@ const StepEditor = ({ step, onUpdate }: StepEditorProps) => {
             <MenuItem value="Custom">Specific Unscrewing</MenuItem>
           </Select>
           {step.options.mode === "Custom" && (
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
                 label="Coordinate X"
                 type="number"
