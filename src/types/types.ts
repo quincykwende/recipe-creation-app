@@ -1,17 +1,17 @@
-export type StepType = 'TakeImage' | 'Unscrewing' | ""
+export type StepType = "TakeImage" | "Unscrewing" | "";
 
 export interface Recipe {
-    name: string
-    steps: BaseRecipeStep[]
+  name: string;
+  steps: BaseRecipeStep[];
 }
 
 export interface RecipeStep extends BaseRecipeStep {
-    id: number
+  id: number;
 }
 
 export interface BaseRecipeStep {
-    type: StepType
-    options: {
-        [key: string]: any
-    }
+  type: StepType;
+  options: {
+    [key: string]: any;
+  };
 }
