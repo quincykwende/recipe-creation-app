@@ -34,3 +34,34 @@ test("adding and managing steps state", () => {
   fireEvent.click(addStepButton)
   expect(screen.queryAllByText(/Step ID:/i).length).toBe(2)
 })
+
+/*
+test("exports recipe as JSON", ()=>{
+  render(<App />)
+  // Add a recipe name
+  const input = screen.getByLabelText(/Recipe Name/i);
+  fireEvent.change(input, { target: { value: 'Test Recipe' } });
+
+  // Add a step
+  const addStepButton = screen.getByText(/Add Step/i);
+  fireEvent.click(addStepButton);
+
+  // Open the step type dropdown
+  const stepTypeSelect = screen.getByRole('combobox');
+  fireEvent.mouseDown(stepTypeSelect);
+
+  // Select "Take Image"
+  const takeImageOption = screen.getByText(/Take Image/i);
+  fireEvent.click(takeImageOption);
+
+  // Export recipe
+  const exportButton = screen.getByText(/Export Recipe as JSON/i);
+  fireEvent.click(exportButton);
+
+  // Verify JSON output
+  const jsonOutput = screen.getByDisplayValue(/"name": "Test Recipe"/i);
+  expect(jsonOutput).toBeInTheDocument();
+  expect(jsonOutput).toHaveValue(expect.stringContaining('"steps"'));
+
+})
+*/
