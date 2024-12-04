@@ -11,10 +11,14 @@ function App() {
     const addStep = () => {
         const newStep: RecipeStep = {
             id: Date.now(),
-            type: "TakeImage",
+            type: "",
             options: {}
         }
         setSteps([...steps, newStep])
+    }
+
+    const updateStep = (id: number, updatedStep: RecipeStep) => {
+        setSteps(steps.map((step)=> ( step.id === id ? updatedStep : step)))
     }
 
   return (
@@ -26,8 +30,10 @@ function App() {
                 label="Recipe Name"
                 value={recipeName}
                 onChange={ (e) => setRecipeName(e.target.value)}
+                margin="normal"
+                fullWidth
             />
-            <RecipeSteps steps={steps} onAddStep={addStep}/>
+            <RecipeSteps steps={steps} onAddStep={addStep} onUpdateStep={updateStep}/>
       </Container>
   );
 }
