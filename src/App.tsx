@@ -14,7 +14,7 @@ import {
   Alert,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import {Recipe, RecipeStep, StepType} from "./types/types";
+import { Recipe, RecipeStep, StepType } from "./types/types";
 import RecipeSteps from "./components/RecipeSteps";
 
 function App() {
@@ -35,6 +35,10 @@ function App() {
 
   const updateStep = (id: number, updatedStep: RecipeStep) => {
     setSteps(steps.map((step) => (step.id === id ? updatedStep : step)));
+  };
+
+  const removeStep = (id: number) => {
+    setSteps(steps.filter((step) => step.id !== id));
   };
 
   const exportRecipeAsJson = () => {
@@ -96,6 +100,7 @@ function App() {
                 steps={steps}
                 onAddStep={addStep}
                 onUpdateStep={updateStep}
+                onRemoveStep={removeStep}
               />
               <Divider />
               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
