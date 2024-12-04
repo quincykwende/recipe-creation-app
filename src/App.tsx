@@ -82,7 +82,7 @@ function App() {
       <Typography variant="h4" gutterBottom mt={2}>
         Recipes Creation App
       </Typography>
-      <Grid container spacing={3} mt={2}>
+      <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
@@ -147,6 +147,7 @@ function App() {
                   value={exportedJson}
                   onChange={(e) => setExportedJson(e.target.value)}
                   inputProps={{ rows: 8 }}
+                  maxRows={20}
                 />
               </Box>
               <Button
