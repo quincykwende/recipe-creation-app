@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import {
   Container,
   Typography,
@@ -14,67 +14,95 @@ import {
   Alert,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { Recipe, RecipeStep, StepType } from "./types/types";
+import { Recipe, RecipeStep } from "./types/types";
 import RecipeSteps from "./components/RecipeSteps";
+import { rootReducer, initialAppState } from "./reducers/rootReducer";
 
 function App() {
-  const [recipeName, setRecipeName] = useState<string>("");
-  const [steps, setSteps] = useState<RecipeStep[]>([]);
+  const [state, dispatch] = useReducer(rootReducer, initialAppState);
   const [exportedJson, setExportedJson] = useState<string>("");
-  const [copyAlert, setCopyAlert] = useState<boolean>(false);
-  const [jsonErrorAlert, setJsonErrorAlert] = useState<boolean>(false);
-
-  const addStep = () => {
-    const newStep: RecipeStep = {
-      id: Date.now(),
-      type: "",
-      options: {},
-    };
-    setSteps([...steps, newStep]);
-  };
-
-  const updateStep = (id: number, updatedStep: RecipeStep) => {
-    setSteps(steps.map((step) => (step.id === id ? updatedStep : step)));
-  };
-
-  const removeStep = (id: number) => {
-    setSteps(steps.filter((step) => step.id !== id));
-  };
 
   const exportRecipeAsJson = () => {
     const recipe: Recipe = {
-      name: recipeName,
-      steps: steps.map(({ id, ...rest }) => rest),
+      name: state.recipe.recipeName,
+      steps: state.recipe.steps.map(({ id, ...rest }) => rest),
     };
-    setExportedJson(JSON.stringify(recipe, null, 2));
+    const recipeJson = JSON.stringify(recipe, null, 2);
+    setExportedJson(recipeJson); // Update exported JSON
+    dispatch({
+      type: "SET_ALERT",
+      payload: {
+        message: "Recipe has been exported as JSON!",
+        severity: "success",
+      },
+    });
   };
 
   const copyJsonToClipboard = () => {
-    if (exportedJson) {
-      navigator.clipboard.writeText(exportedJson);
-      setCopyAlert(true); // Show the Snackbar
+    navigator.clipboard
+      .writeText(exportedJson)
+      .then(() => {
+        dispatch({
+          type: "SET_ALERT",
+          payload: {
+            message: "JSON has been copied to clipboard!",
+            severity: "success",
+          },
+        });
+      })
+      .catch(() => {
+        dispatch({
+          type: "SET_ALERT",
+          payload: { message: "Failed to copy JSON!", severity: "error" },
+        });
+      });
+  };
+
+  const populateFormFromJson = (jsonString: string) => {
+    try {
+      const data = JSON.parse(jsonString);
+      setExportedJson(jsonString);
+      if (data.name && Array.isArray(data.steps)) {
+        dispatch({ type: "RESET_RECIPE" });
+        dispatch({ type: "SET_RECIPE_NAME", payload: data.name });
+        data.steps.forEach((step: RecipeStep, index: number) => {
+          dispatch({
+            type: "ADD_RECIPE_STEP",
+            payload: {
+              id: Date.now() + index,
+              type: step.type,
+              options: step.options || {},
+            },
+          });
+        });
+        dispatch({
+          type: "SET_ALERT",
+          payload: {
+            message: "Form populated successfully!",
+            severity: "success",
+          },
+        });
+      } else {
+        dispatch({
+          type: "SET_ALERT",
+          payload: { message: "Invalid JSON format!", severity: "error" },
+        });
+      }
+    } catch (error) {
+      dispatch({
+        type: "SET_ALERT",
+        payload: { message: "Invalid JSON format!", severity: "error" },
+      });
     }
   };
 
-  const populateFormFromJson = () => {
-    try {
-      const data = JSON.parse(exportedJson);
-      if (data.name && Array.isArray(data.steps)) {
-        setRecipeName(data.name);
-        setSteps(
-          data.steps.map((step: any, index: number) => ({
-            id: Date.now() + index,
-            type: step.type as StepType,
-            options: step.options || {},
-          })),
-        );
-      } else {
-        setJsonErrorAlert(true);
-      }
-    } catch (error) {
-      console.error(error);
-      setJsonErrorAlert(true);
-    }
+  const handleResetForm = () => {
+    dispatch({ type: "RESET_RECIPE" });
+    setExportedJson("");
+    dispatch({
+      type: "SET_ALERT",
+      payload: { message: "Form reset successfully!", severity: "success" },
+    });
   };
 
   return (
@@ -91,24 +119,41 @@ function App() {
               </Typography>
               <TextField
                 label="Recipe Name"
-                value={recipeName}
-                onChange={(e) => setRecipeName(e.target.value)}
+                value={state.recipe.recipeName}
+                onChange={(e) =>
+                  dispatch({ type: "SET_RECIPE_NAME", payload: e.target.value })
+                }
                 margin="normal"
                 fullWidth
               />
               <RecipeSteps
-                steps={steps}
-                onAddStep={addStep}
-                onUpdateStep={updateStep}
-                onRemoveStep={removeStep}
+                steps={state.recipe.steps}
+                onAddStep={() => dispatch({ type: "ADD_RECIPE_STEP" })}
+                onUpdateStep={(updatedStep) =>
+                  dispatch({ type: "UPDATE_RECIPE_STEP", payload: updatedStep })
+                }
+                onRemoveStep={(id) =>
+                  dispatch({ type: "REMOVE_RECIPE_STEP", payload: id })
+                }
               />
               <Divider />
-              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between" }}
+                mt={2}
+              >
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleResetForm}
+                >
+                  Reset
+                </Button>
                 <Button
                   variant="contained"
                   onClick={exportRecipeAsJson}
-                  sx={{ mt: 3 }}
-                  disabled={!recipeName || steps.length === 0}
+                  disabled={
+                    !state.recipe.recipeName || state.recipe.steps.length === 0
+                  }
                 >
                   Export Recipe as JSON
                 </Button>
@@ -151,10 +196,10 @@ function App() {
                 />
               </Box>
               <Button
-                variant="contained"
-                onClick={populateFormFromJson}
-                sx={{ mt: 2 }}
-                disabled={!exportedJson}
+                  variant="contained"
+                  onClick={() => populateFormFromJson(exportedJson)}
+                  sx={{ mt: 2 }}
+                  disabled={!exportedJson}
               >
                 Populate Form
               </Button>
@@ -163,35 +208,22 @@ function App() {
         </Grid>
       </Grid>
 
-      <Snackbar
-        open={copyAlert}
-        autoHideDuration={3000}
-        onClose={() => setCopyAlert(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert
-          onClose={() => setCopyAlert(false)}
-          severity="success"
-          sx={{ width: "100%" }}
+      {state.alert ? (
+        <Snackbar
+          open
+          autoHideDuration={3000}
+          onClose={() => dispatch({ type: "CLEAR_ALERT" })}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          JSON copied to clipboard!
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={jsonErrorAlert}
-        autoHideDuration={3000}
-        onClose={() => setJsonErrorAlert(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert
-          onClose={() => setJsonErrorAlert(false)}
-          severity="error"
-          sx={{ width: "100%" }}
-        >
-          Invalid JSON format. Please make it's properly structured.
-        </Alert>
-      </Snackbar>
+          <Alert
+            onClose={() => dispatch({ type: "CLEAR_ALERT" })}
+            severity={state.alert.severity}
+            sx={{ width: "100%" }}
+          >
+            {state.alert.message}
+          </Alert>
+        </Snackbar>
+      ) : null}
     </Container>
   );
 }

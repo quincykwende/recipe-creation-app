@@ -5,11 +5,16 @@ import StepEditor from "./StepEditor";
 interface RecipeStepsProps {
   steps: RecipeStep[];
   onAddStep: () => void;
-  onUpdateStep: (id: number, updatedStep: RecipeStep) => void;
+  onUpdateStep: (updatedStep: RecipeStep) => void;
   onRemoveStep: (id: number) => void;
 }
 
-const RecipeSteps = ({ steps, onAddStep, onUpdateStep, onRemoveStep }: RecipeStepsProps) => {
+const RecipeSteps = ({
+  steps,
+  onAddStep,
+  onUpdateStep,
+  onRemoveStep,
+}: RecipeStepsProps) => {
   return (
     <div>
       <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -31,7 +36,7 @@ const RecipeSteps = ({ steps, onAddStep, onUpdateStep, onRemoveStep }: RecipeSte
             <Box sx={{ width: "100%", padding: 2 }}>
               <StepEditor
                 step={step}
-                onUpdate={(updatedStep) => onUpdateStep(step.id, updatedStep)}
+                onUpdate={(updatedStep) => onUpdateStep(updatedStep)}
               />
               <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
                 <Button
